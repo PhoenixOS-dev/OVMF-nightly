@@ -1,0 +1,32 @@
+name: OVMF
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  schedule:
+    - cron:  '0 0 * * 0-6'
+
+    
+jobs:
+  download_distro_ovmf:
+    name: Download OVMF from distro
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout sources
+      uses: actions/checkout@v3
+    
+    - name: Install OVMF
+      run: |
+        sudo apt-get update
+        sudo apt-get install ovmf qemu-efi-aarch64 -y
+
+  download_ci_ovmf:
+    name: Download CI OVMF
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cargo run
+        run: cargo run
