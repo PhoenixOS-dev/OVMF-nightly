@@ -1,5 +1,5 @@
 [package]
-name = "OVMF-nightly"
+name = "ovmf-nightly"
 version = "0.1.0"
 edition = "2021"
 

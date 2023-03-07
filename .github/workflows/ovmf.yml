@@ -12,12 +12,22 @@ on:
 
     
 jobs:
-
-  download_ci_ovmf_and_deploy:
-    name: Download CI OVMF
+  download_ovmf_and_create_artifact:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - run: cargo run
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - uses: actions/checkout@v2
+    - name: Download OVMF
+      run: cargo run
+    - name: Upload artifact  
+      uses: actions/upload-artifact@v2
+      with:
+        name: OVMF
+        path: |
+         ./ci-aarch64-debug
+         ./ci-aarch64-release
+         ./ci-x64-debug
+         ./ci-x64-release
+    
+      
+  
+    
