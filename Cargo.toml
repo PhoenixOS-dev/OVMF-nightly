@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 reqwest = { version = "0.11.14", features = ["rustls-tls"], default-features = false }
 tokio = { version = "1.5.0", features = ["macros", "rt", "rt-multi-thread"] }
+chrono = "0.4.23"

@@ -1,4 +1,3 @@
 /target
-/x64
-/aarch64
+/ci-*
 Cargo.lock

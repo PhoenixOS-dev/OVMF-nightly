@@ -3,6 +3,8 @@ use std::fs;
 use std::path::Path;
 use std::fs::File;
 use std::io::Write;
+use std::process::Command;
+use chrono::{Utc, Datelike};
 
 const LATEST_OVMF_URL: &str = "
     https://retrage.github.io/edk2-nightly/bin/
@@ -27,16 +29,25 @@ const DEBUG_OVMF_FILES_AARCH64: [&str; 2] = [
     "DEBUGAARCH64_QEMU_VARS.fd",
 ];
 
+const OVMF_DEPLOY_DIRS: [&str; 4] = [
+    "ci-aarch64-debug",
+    "ci-aarch64-release",
+    "ci-x64-debug",
+    "ci-x64-release",
+];
+
 #[tokio::main]
 async fn main() {
     latest_release_ovmf_x64().await.unwrap();
     latest_debug_ovmf_x64().await.unwrap();
     latest_release_ovmf_aarch64().await.unwrap();
     latest_debug_ovmf_aarch64().await.unwrap();
+    create_gh_release();
+
 }
 
 async fn latest_release_ovmf_x64()-> Result<(), Box<dyn Error>>{
-    let ovmf_out_dir = Path::new("x64").join("release");
+    let ovmf_out_dir = Path::new("ci-x64-release");
 
     fs::create_dir_all(&ovmf_out_dir)?;
 
@@ -53,7 +64,7 @@ async fn latest_release_ovmf_x64()-> Result<(), Box<dyn Error>>{
     Ok(())
 }
 async fn latest_debug_ovmf_x64()-> Result<(), Box<dyn Error>>{
-    let ovmf_out_dir = Path::new("x64").join("debug");
+    let ovmf_out_dir = Path::new("ci-x64-debug");
 
     fs::create_dir_all(&ovmf_out_dir)?;
 
@@ -70,7 +81,7 @@ async fn latest_debug_ovmf_x64()-> Result<(), Box<dyn Error>>{
     Ok(())
 }
 async fn latest_release_ovmf_aarch64()-> Result<(), Box<dyn Error>>{
-    let ovmf_out_dir = Path::new("aarch64").join("release");
+    let ovmf_out_dir = Path::new("ci-aarch64-release");
 
     fs::create_dir_all(&ovmf_out_dir)?;
 
@@ -87,7 +98,7 @@ async fn latest_release_ovmf_aarch64()-> Result<(), Box<dyn Error>>{
     Ok(())
 }
 async fn latest_debug_ovmf_aarch64()-> Result<(), Box<dyn Error>>{
-    let ovmf_out_dir = Path::new("aarch64").join("debug");
+    let ovmf_out_dir = Path::new("ci-aarch64-debug");
 
     fs::create_dir_all(&ovmf_out_dir)?;
 
@@ -102,4 +113,21 @@ async fn latest_debug_ovmf_aarch64()-> Result<(), Box<dyn Error>>{
     }
 
     Ok(())
+}
+
+
+fn create_gh_release(){
+    let mut github_cmd = Command::new("gh");
+
+    let current_date = Utc::now().to_rfc3339();
+
+    github_cmd.arg("release").arg("create").arg(current_date);
+
+    for dirs in OVMF_DEPLOY_DIRS.iter(){
+        let dir = Path::new(dirs);
+        github_cmd.arg(dir);
+    }
+    if !github_cmd.status().unwrap().success() {
+        panic!("gh release failed")
+    }
 }
